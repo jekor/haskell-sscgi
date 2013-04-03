@@ -1,6 +1,6 @@
 -- Copyright 2013 Chris Forno
 
-module SCGI (SCGI, runRequest, header, allHeaders, method, path, setHeader, Headers, Body, Status, Response(..)) where
+module Network.SCGI (SCGI, runRequest, header, allHeaders, method, path, setHeader, Headers, Body, Status, Response(..)) where
 
 import Control.Applicative ((<$>), (<*>), (<*))
 import Control.Arrow (first)
