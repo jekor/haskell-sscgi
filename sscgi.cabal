@@ -28,7 +28,7 @@ library
                        containers,
                        Glob,
                        mtl,
-                       MonadCatchIO-mtl,
+                       exceptions,
                        transformers,
                        utf8-string
   extensions:          GeneralizedNewtypeDeriving,

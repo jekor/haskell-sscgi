@@ -6,7 +6,7 @@ import Control.Applicative ((<$>), (<*>), (<*), (*>))
 import Control.Arrow (first)
 import Control.Exception (SomeException)
 import Control.Monad (liftM, liftM2)
-import Control.Monad.CatchIO (MonadCatchIO(..))
+import Control.Monad.Catch (MonadCatch(..), MonadThrow(..))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT, MonadReader, asks)
 import Control.Monad.State (StateT, runStateT, MonadState, modify, gets)
@@ -36,7 +36,7 @@ type Status = BL.ByteString
 data Response = Response Status Body
 
 newtype SCGIT m a = SCGIT (ReaderT (Headers, Body) (StateT Headers m) a)
-  deriving (Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatchIO)
+  deriving (Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatch, MonadThrow)
 
 type SCGI = SCGIT IO
 
@@ -89,7 +89,7 @@ responseHeader :: Monad m
 responseHeader name = gets (M.lookup (CI.mk name))
 
 -- |Run a request in the SCGI monad.
-runRequest :: MonadCatchIO m
+runRequest :: (MonadIO m, MonadCatch m)
            => Handle -- ^ the handle connected to the web server (from 'accept')
            -> SCGIT m Response -- ^ the action to run in the SCGI monad
            -> m () -- ^ nothing is returned, the result of the action is written back to the server
