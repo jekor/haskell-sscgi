@@ -1,8 +1,5 @@
--- Copyright 2013 Chris Forno
-
 module Network.SCGI (SCGIT, SCGI, runRequest, header, allHeaders, body, method, path, setHeader, responseHeader, Headers, Body, Status, Response(..), negotiate) where
 
-import Control.Applicative ((<$>), (<*>), (<*), (*>))
 import Control.Arrow (first)
 import Control.Exception (SomeException)
 import Control.Monad (liftM, liftM2)
@@ -36,7 +33,7 @@ type Status = BL.ByteString
 data Response = Response Status Body
 
 newtype SCGIT m a = SCGIT (ReaderT (Headers, Body) (StateT Headers m) a)
-  deriving (Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatchIO)
+  deriving (Functor, Applicative, Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatchIO)
 
 type SCGI = SCGIT IO
 
