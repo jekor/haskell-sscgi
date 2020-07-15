@@ -1,5 +1,5 @@
 name:                sscgi
-version:             0.3.1
+version:             0.3.2
 synopsis:            Simple SCGI Library
 description:         This is a simple implementation of the SCGI protocol without support for the Network.CGI interface. It's still rough but currently powers www.vocabulink.com.
 homepage:            https://github.com/jekor/haskell-sscgi
@@ -20,15 +20,14 @@ source-repository head
 
 library
   exposed-modules:     Network.SCGI
-  -- other-modules:       
   build-depends:       base >= 4 && < 6,
                        attoparsec,
                        bytestring,
                        case-insensitive,
                        containers,
+                       exceptions,
                        Glob,
                        mtl,
-                       MonadCatchIO-mtl,
                        transformers,
                        utf8-string
   extensions:          GeneralizedNewtypeDeriving,

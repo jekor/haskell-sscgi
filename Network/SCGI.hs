@@ -2,8 +2,8 @@ module Network.SCGI (SCGIT, SCGI, runRequest, header, allHeaders, body, method, 
 
 import Control.Arrow (first)
 import Control.Exception (SomeException)
-import Control.Monad (liftM, liftM2)
-import Control.Monad.CatchIO (MonadCatchIO(..))
+import Control.Monad (liftM)
+import Control.Monad.Catch (MonadCatch, MonadThrow, catch)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Reader (ReaderT, runReaderT, MonadReader, asks)
 import Control.Monad.State (StateT, runStateT, MonadState, modify, gets)
@@ -33,7 +33,7 @@ type Status = BL.ByteString
 data Response = Response Status Body
 
 newtype SCGIT m a = SCGIT (ReaderT (Headers, Body) (StateT Headers m) a)
-  deriving (Functor, Applicative, Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatchIO)
+  deriving (Functor, Applicative, Monad, MonadState Headers, MonadReader (Headers, Body), MonadIO, MonadCatch, MonadThrow)
 
 type SCGI = SCGIT IO
 
@@ -64,13 +64,9 @@ method :: Monad m => SCGIT m (Maybe B.ByteString) -- ^ the method if found
 method = liftM (B8.map toUpper) `liftM` header "REQUEST_METHOD"
 
 -- |Get the requested path. According to the spec, this can be complex, and
--- actual CGI implementations diverge from the spec. I've found this to work,
--- even though it doesn't seem correct or intuitive.
+-- actual CGI implementations diverge from the spec.
 path :: Monad m => SCGIT m (Maybe B.ByteString) -- ^ the path if found
-path = do
-  path1 <- header "SCRIPT_NAME"
-  path2 <- header "PATH_INFO"
-  return $ liftM2 B.append path1 path2
+path = header "REQUEST_URI"
 
 -- |Set a response header.
 setHeader :: Monad m
@@ -86,7 +82,7 @@ responseHeader :: Monad m
 responseHeader name = gets (M.lookup (CI.mk name))
 
 -- |Run a request in the SCGI monad.
-runRequest :: MonadCatchIO m
+runRequest :: (MonadCatch m, MonadIO m)
            => Handle -- ^ the handle connected to the web server (from 'accept')
            -> SCGIT m Response -- ^ the action to run in the SCGI monad
            -> m () -- ^ nothing is returned, the result of the action is written back to the server
